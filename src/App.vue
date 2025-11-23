@@ -6,7 +6,7 @@ import FoodItem from './components/FoodItem.vue';
 const foodList = ref([]);
 
 onMounted(() => {
-  axios.get('https://webtechprojektbe-calorietrackz.onrender.com/foods')
+  axios.get('https://webtechprojektbe-calorietrackz.onrender.com/api/foods')
     .then(response => {
       foodList.value = response.data;
       console.log("Daten geladen:", response.data);
