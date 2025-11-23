@@ -1,13 +1,22 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
 import FoodItem from './components/FoodItem.vue';
 
-const foodList = ref([
-  { id: 1, name: 'Apfel', calories: 52 },
-  { id: 2, name: 'Banane', calories: 89 },
-  { id: 3, name: 'Scheibe Vollkornbrot', calories: 75 }
-]);
+const foodList = ref([]);
+
+onMounted(() => {
+  axios.get('https://webtechprojektbe-calorietrackz.onrender.com/foods')
+    .then(response => {
+      foodList.value = response.data;
+      console.log("Daten geladen:", response.data);
+    })
+    .catch(error => {
+      console.error("Fehler beim Laden:", error);
+    });
+});
 </script>
+
 <template>
   <main>
     <h1>Kalorientracker</h1>
