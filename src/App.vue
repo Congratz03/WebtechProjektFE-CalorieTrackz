@@ -10,12 +10,12 @@
       <!-- Nav Links -->
       <div class="flex space-x-4 md:space-x-8 text-sm font-medium overflow-x-auto">
         <a href="#" class="nav-link active flex items-center p-2 text-blue-600 whitespace-nowrap">
-          <i class="fa-solid fa-house mr-2"></i> Home
+          <i class="fa-solid fa-th-large mr-2"></i> Home
         </a>
 
         <button @click="openAddModal"
                 class="nav-link flex items-center p-2 text-gray-500 hover:text-blue-600 transition whitespace-nowrap">
-          <i class="fa-solid fa-plus-circle mr-2"></i> Eintrag Hinzufügen
+          <i class="fa-solid fa-plus mr-2"></i> Eintrag Hinzufügen
         </button>
 
         <a href="#" class="nav-link flex items-center p-2 text-gray-500 hover:text-blue-600 transition whitespace-nowrap">
@@ -23,11 +23,11 @@
         </a>
 
         <a href="#" class="nav-link flex items-center p-2 text-gray-500 hover:text-blue-600 transition whitespace-nowrap">
-          <i class="fa-solid fa-user mr-2"></i> Profil
+          <i class="fa-solid fa-wrench mr-2"></i> Profil
         </a>
 
         <a href="#" class="nav-link flex items-center p-2 text-gray-500 hover:text-blue-600 transition whitespace-nowrap">
-          <i class="fa-solid fa-cog mr-2"></i> Einstellungen
+          <i class="fa-solid fa-sliders-h mr-2"></i> Einstellungen
         </a>
       </div>
     </nav>
