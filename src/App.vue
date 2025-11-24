@@ -23,7 +23,7 @@
         </a>
 
         <a href="#" class="nav-link flex items-center p-2 text-gray-500 hover:text-blue-600 transition whitespace-nowrap">
-          <i class="fa-solid fa-wrench mr-2"></i> Profil
+          <i class="fa-solid fa-user mr-2"></i> Profil
         </a>
 
         <a href="#" class="nav-link flex items-center p-2 text-gray-500 hover:text-blue-600 transition whitespace-nowrap">
