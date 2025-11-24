@@ -134,7 +134,7 @@ export default {
   data() {
     return {
       // Konstanten
-      BASE_API_URL: 'http://localhost:8080/api/foods',
+      BASE_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/foods',
       GOAL_CALORIES: 2000,
 
       // Zustand
