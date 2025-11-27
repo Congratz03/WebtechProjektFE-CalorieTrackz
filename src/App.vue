@@ -271,16 +271,13 @@ export default {
 
         const products = await response.json();
 
-        // Daten von Open Food Facts filtern und aufbereiten
         this.searchResults = products
-          .filter(p => p.product_name && p.nutriments && p.nutriments.energy_kcal_100g)
-          .map(p => ({
-            name: p.product_name,
-            calories: Math.round(p.nutriments.energy_kcal_100g || 0),
-            protein: parseFloat((p.nutriments.proteins_100g || 0).toFixed(1)),
-            carbohydrates: parseFloat((p.nutriments.carbohydrates_100g || 0).toFixed(1)),
-            fat: parseFloat((p.nutriments.fat_100g || 0).toFixed(1)),
-          }));
+            .filter(p => p.product_name && p.code)
+            .map(p => ({
+              name: p.product_name,
+              code: p.code,
+              calories: 'N/A'
+            }));
 
       } catch (error) {
         console.error("Fehler bei der Suche:", error);
@@ -291,15 +288,43 @@ export default {
     },
 
     // Übernimmt die Daten eines gefundenen Produkts in das Eingabeformular
-    selectProduct(product) {
-      this.newEntry.name = product.name + ' (100g)';
-      this.newEntry.calories = product.calories;
-      this.newEntry.protein = product.protein;
-      this.newEntry.carbohydrates = product.carbohydrates;
-      this.newEntry.fat = product.fat;
-
+    async selectProduct(product) {
+      this.isSearching = true;
       this.searchResults = [];
-      this.searchQuery = '';
+      this.errorMessage = null;
+
+      try {
+        const response = await fetch(`${this.DETAIL_API_URL}/${product.code}`, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (!response.ok) {
+          throw new Error(`Detailabruf fehlgeschlagen! Status: ${response.status}`);
+        }
+
+        const details = await response.json();
+
+        if (!details || !details.nutriments) {
+          throw new Error("Keine Nährwertangaben gefunden.");
+        }
+
+        // 2. Formular mit den Detail-Daten füllen
+        const nutriments = details.nutriments;
+
+        this.newEntry.name = details.product_name + ' (100g)';
+        this.newEntry.calories = Math.round(nutriments.energy_kcal_100g || 0);
+        this.newEntry.protein = parseFloat((nutriments.proteins_100g || 0).toFixed(1));
+        this.newEntry.carbohydrates = parseFloat((nutriments.carbohydrates_100g || 0).toFixed(1));
+        this.newEntry.fat = parseFloat((nutriments.fat_100g || 0).toFixed(1));
+
+      } catch (error) {
+        console.error("Fehler beim Detailabruf:", error);
+        this.errorMessage = `Fehler beim Abrufen der Details: ${error.message}`;
+      } finally {
+        this.isSearching = false;
+        this.searchQuery = '';
+      }
     },
 
     // Lädt alle Einträge
