@@ -169,14 +169,9 @@
 </template>
 
 <script>
-// Import der FoodItem Komponente (auskommentiert, falls Sie diese im selben Ordner haben)
-// import FoodItem from './FoodItem.vue';
+
 
 export default {
-  // Wenn Sie die FoodItem Komponente in einer separaten Datei haben:
-  // components: {
-  //   FoodItem
-  // },
 
   // 1. Initialer Zustand der Komponente (Daten)
   data() {
@@ -184,6 +179,7 @@ export default {
       // Konstanten
       BASE_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/foods',
       SEARCH_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/search',
+      DETAIL_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/search/details',
       GOAL_CALORIES: 2000,
 
       // Zustand
@@ -201,7 +197,7 @@ export default {
     };
   },
 
-  // 2. Berechnete Eigenschaften (ERWEITERT um Makro-Summen)
+  // 2. Berechnete Eigenschaften
   computed: {
     consumedCalories() {
       return this.foodEntries.reduce((sum, entry) => sum + (entry.calories || 0), 0);
