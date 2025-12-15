@@ -102,10 +102,10 @@
         <form @submit.prevent="addFoodEntry">
 
           <div class="mb-4">
-            <label for="food-search" class="block text-sm font-medium text-gray-700">Lebensmittel suchen (FatSecret)</label>
+            <label for="food-search" class="block text-sm font-medium text-gray-700">Lebensmittel suchen (CalorieNinjas)</label>
             <div class="relative">
               <input type="text" id="food-search" v-model="searchQuery" @input="searchFood"
-                     placeholder="Z.B. Apfel, Pizza..."
+                     placeholder="z.B. 300g prime rib and mashed potatoes..."
                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
               <i v-if="isSearching" class="fa-solid fa-spinner fa-spin absolute right-3 top-1/2 -translate-y-1/2 text-blue-500"></i>
             </div>
