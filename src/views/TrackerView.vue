@@ -202,6 +202,7 @@ export default {
   mounted() {
     this.currentDate = new Date().toLocaleDateString('de-DE', {weekday: 'long', day: 'numeric', month: 'long'});
     this.fetchFoodEntries();
+    this.fetchUserGoal();
   },
   methods: {
     getAuthHeaders() {
@@ -292,6 +293,23 @@ export default {
       if (this.handleAuthError(response)) return;
 
       this.fetchFoodEntries();
+    },
+
+    async fetchUserGoal() {
+      try {
+        const response = await fetch(this.USER_API_URL, {
+          headers: this.getAuthHeaders()
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.targetCalories) {
+            this.GOAL_CALORIES = Math.round(data.targetCalories);
+          }
+        }
+      } catch (error) {
+        console.error("Konnte User-Ziel nicht laden, nutze Fallback 2000", error);
+      }
     }
   }
 }
