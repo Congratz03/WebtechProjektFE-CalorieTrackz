@@ -7,15 +7,35 @@ const router = createRouter({
     routes: [
         {
             path: '/',
-            name: 'tracker',
-            component: TrackerView
+            redirect: '/login'
         },
         {
             path: '/login',
             name: 'login',
-            component: LoginView
+            component: LoginView,
+            meta: { requiresAuth: false }
+        },
+        {
+            path: '/tracker',
+            name: 'tracker',
+            component: TrackerView,
+            meta: { requiresAuth: true }
         }
     ]
 })
+
+router.beforeEach((to, from, next) => {
+    const token = localStorage.getItem('jwt_token');
+
+    if (to.meta.requiresAuth && !token) {
+        next('/login');
+    }
+    else if (to.path === '/login' && token) {
+        next('/tracker');
+    }
+    else {
+        next();
+    }
+});
 
 export default router
