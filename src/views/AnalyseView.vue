@@ -140,7 +140,6 @@ export default {
       foodEntries: [],
       isLoading: true,
 
-
       doughnutChartOptions: {
         responsive: true,
         maintainAspectRatio: false,
