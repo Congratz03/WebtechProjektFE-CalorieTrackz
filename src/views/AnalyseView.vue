@@ -3,29 +3,67 @@
 
     <header class="max-w-5xl mx-auto px-6 mb-8 pt-8">
       <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Deine Analyse</h1>
-      <p class="text-slate-400 font-medium">Statistiken basierend auf deinen getrackten Tagen.</p>
+      <p class="text-slate-400 font-medium">Die Daten basierend auf deinem Profil und Einträgen.</p>
     </header>
 
     <main class="max-w-5xl mx-auto px-6 pb-20">
 
       <div v-if="isLoading" class="flex flex-col items-center justify-center py-20 text-slate-400">
         <div class="w-10 h-10 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
-        <p class="text-sm font-medium">Lade Daten...</p>
+        <p class="text-sm font-medium">Synchronisiere mit Datenbank...</p>
       </div>
 
       <div v-else-if="foodEntries.length === 0" class="bg-white border-2 border-dashed border-slate-200 rounded-[2rem] py-20 text-center">
         <i class="fa-solid fa-chart-pie text-slate-200 text-4xl mb-4"></i>
-        <p class="text-slate-400 font-medium">Noch keine Einträge vorhanden.</p>
-        <p class="text-xs text-slate-400 mt-2">Füge im Tracker Mahlzeiten hinzu, um hier Statistiken zu sehen.</p>
-        <router-link to="/tracker" class="mt-6 inline-block bg-indigo-600 text-white px-6 py-2 rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors">
+        <p class="text-slate-400 font-medium">Noch keine Daten für eine Analyse vorhanden.</p>
+        <router-link to="/tracker" class="mt-4 inline-block bg-indigo-600 text-white px-6 py-2 rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors">
           Zum Tracker
         </router-link>
       </div>
 
       <div v-else class="space-y-6">
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="mb-2">
 
+          <div v-if="userGoal === 'LOSE_WEIGHT'" class="bg-gradient-to-r from-emerald-50 to-teal-50 p-8 rounded-[2rem] border border-emerald-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <h3 class="text-xl font-bold text-emerald-900 mb-1">Deine Wochenbilanz</h3>
+              <p class="text-sm text-emerald-600 font-medium">Dein Fokus: Kaloriendefizit halten.</p>
+            </div>
+            <div class="text-right">
+              <p class="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-1">Gesamt Eingespart</p>
+              <p class="text-4xl font-black" :class="weeklyDeficit >= 0 ? 'text-emerald-600' : 'text-rose-500'">
+                {{ weeklyDeficit > 0 ? '-' : '+' }}{{ Math.abs(weeklyDeficit) }} <span class="text-lg font-medium opacity-60">kcal</span>
+              </p>
+            </div>
+          </div>
+
+          <div v-else-if="userGoal === 'BUILD_MUSCLE'" class="bg-gradient-to-r from-indigo-50 to-blue-50 p-8 rounded-[2rem] border border-indigo-100">
+            <div class="flex justify-between items-end mb-4">
+              <div>
+                <h3 class="text-xl font-bold text-indigo-900 mb-1">Protein Check</h3>
+                <p class="text-sm text-indigo-600 font-medium">Ziel: {{ proteinGoal }}g pro Tag für den Aufbau.</p>
+              </div>
+              <span class="text-3xl font-black text-indigo-600">{{ averageDailyProtein }}g <span class="text-sm font-normal text-indigo-400">/ {{ proteinGoal }}g</span></span>
+            </div>
+            <div class="h-4 w-full bg-white rounded-full overflow-hidden border border-indigo-100 relative">
+              <div class="h-full bg-indigo-500 transition-all duration-1000" :style="{ width: Math.min(proteinPercentage, 100) + '%' }"></div>
+            </div>
+          </div>
+
+          <div v-else class="bg-white p-6 rounded-[2rem] border border-slate-100 flex justify-between items-center">
+            <div>
+              <h3 class="text-lg font-bold text-slate-800">Gewicht halten</h3>
+              <p class="text-sm text-slate-400">Versuche nah an deinem Tagesbedarf zu bleiben.</p>
+            </div>
+            <div class="text-right">
+              <p class="text-xs font-bold uppercase text-slate-400 mb-1">Ziel</p>
+              <p class="text-2xl font-black text-slate-800">{{ targetCalories.toFixed(0) }} kcal</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 relative overflow-hidden">
             <div class="relative z-10">
               <p class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Ø Tägl. Kalorien</p>
@@ -73,41 +111,28 @@
             </div>
           </div>
 
-          <div class="md:col-span-2 bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col justify-center">
-            <h3 class="text-lg font-bold text-slate-800 mb-6">Gesamtwerte (All Time)</h3>
-
-            <div class="space-y-6">
-              <div>
-                <div class="flex justify-between text-sm font-bold mb-2">
-                  <span class="text-slate-600">Protein</span>
-                  <span class="text-indigo-600">{{ totalMacros.protein.toFixed(0) }}g</span>
+          <div class="md:col-span-2 bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
+            <h3 class="text-lg font-bold text-slate-800 mb-6">Deine "Top 3" Kalorien-Quellen</h3>
+            <div class="space-y-4">
+              <div
+                  v-for="(food, index) in topFoods"
+                  :key="index"
+                  class="flex items-center justify-between p-3 hover:bg-slate-50 rounded-xl transition-colors border-b border-slate-50 last:border-0"
+              >
+                <div class="flex items-center gap-4">
+                  <div class="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-bold">{{ index + 1 }}</div>
+                  <div>
+                    <p class="font-bold text-slate-800 text-sm">{{ food.name }}</p>
+                    <p class="text-[10px] text-slate-400">{{ food.date || 'Kein Datum' }}</p>
+                  </div>
                 </div>
-                <div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div class="h-full bg-indigo-500" :style="{ width: getPercentage('protein') + '%' }"></div>
-                </div>
+                <span class="font-bold text-indigo-600 text-sm">{{ food.calories }} kcal</span>
               </div>
 
-              <div>
-                <div class="flex justify-between text-sm font-bold mb-2">
-                  <span class="text-slate-600">Kohlenhydrate</span>
-                  <span class="text-emerald-500">{{ totalMacros.carbs.toFixed(0) }}g</span>
-                </div>
-                <div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div class="h-full bg-emerald-500" :style="{ width: getPercentage('carbs') + '%' }"></div>
-                </div>
-              </div>
-
-              <div>
-                <div class="flex justify-between text-sm font-bold mb-2">
-                  <span class="text-slate-600">Fett</span>
-                  <span class="text-rose-500">{{ totalMacros.fat.toFixed(0) }}g</span>
-                </div>
-                <div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div class="h-full bg-rose-500" :style="{ width: getPercentage('fat') + '%' }"></div>
-                </div>
+              <div v-if="topFoods.length === 0" class="text-center text-slate-400 text-sm py-4">
+                Noch nicht genügend Daten.
               </div>
             </div>
-
           </div>
         </div>
 
@@ -117,7 +142,7 @@
 </template>
 
 <script>
-
+// CHART.JS SETUP
 import {
   Chart as ChartJS,
   ArcElement,
@@ -129,47 +154,44 @@ import {
 } from 'chart.js'
 import { Doughnut, Bar } from 'vue-chartjs'
 
-
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
 export default {
   components: { Doughnut, Bar },
   data() {
     return {
+      // ECHTE RENDER URLs
       BASE_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/foods',
+      USER_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/users/me',
+
       foodEntries: [],
       isLoading: true,
 
+      // Initiale Defaults (werden vom Backend überschrieben)
+      userGoal: 'LOSE_WEIGHT',
+      targetCalories: 2000,
+      userWeight: 80,
+
+      // Chart Config
       doughnutChartOptions: {
         responsive: true,
         maintainAspectRatio: false,
         cutout: '75%',
-        plugins: {
-          legend: { position: 'bottom', labels: { usePointStyle: true, font: { family: 'sans-serif', size: 11 } } }
-        }
+        plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, font: { family: 'sans-serif', size: 11 } } } }
       },
-
-
       barChartOptions: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
-          y: {
-            beginAtZero: true,
-            grid: { color: '#f1f5f9' },
-            ticks: { font: { size: 10 }, color: '#94a3b8' }
-          },
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 11, weight: 'bold' }, color: '#64748b' }
-          }
+          y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 }, color: '#94a3b8' } },
+          x: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' }, color: '#64748b' } }
         }
       }
     }
   },
   computed: {
-    // 1. Alle Werte zusammenzählen
+    // 1. Makros summieren
     totalMacros() {
       return this.foodEntries.reduce((acc, item) => {
         acc.protein += item.protein || 0;
@@ -180,69 +202,83 @@ export default {
       }, { protein: 0, carbs: 0, fat: 0, calories: 0 });
     },
 
-    // 2. Anzahl der einzigartigen Tage ermitteln (für den Durchschnitt)
+    // 2. Einzigartige Tage zählen
     uniqueDaysCount() {
       if (this.foodEntries.length === 0) return 0;
       const dates = this.foodEntries.map(entry => entry.date || entry.createdAt?.split('T')[0] || 'unknown');
-      const unique = new Set(dates);
-      return unique.size || 1;
+      return new Set(dates).size || 1;
     },
 
+    // 3. KPIs
     averageDailyCalories() {
       if (this.uniqueDaysCount === 0) return 0;
       return (this.totalMacros.calories / this.uniqueDaysCount).toFixed(0);
     },
-
     averageDailyProtein() {
       if (this.uniqueDaysCount === 0) return 0;
       return (this.totalMacros.protein / this.uniqueDaysCount).toFixed(0);
     },
 
-    // DATEN FÜR KREISDIAGRAMM (All Time)
+    // 4. Protein Ziel Berechnung
+    proteinGoal() {
+      // Bei Muskelaufbau mehr Protein (z.B. 2g/kg), sonst Standard (1.5g/kg)
+      const multiplier = this.userGoal === 'BUILD_MUSCLE' ? 2.0 : 1.5;
+      return (this.userWeight * multiplier).toFixed(0);
+    },
+    proteinPercentage() {
+      const goal = parseFloat(this.proteinGoal);
+      if (!goal || goal === 0) return 0;
+      return (this.averageDailyProtein / goal) * 100;
+    },
+
+    // 5. Wochenbilanz (Soll vs. Ist)
+    weeklyDeficit() {
+      if (this.uniqueDaysCount === 0) return 0;
+      // "Soll" für die getrackten Tage
+      const totalTarget = this.targetCalories * this.uniqueDaysCount;
+      // "Ist"
+      const totalConsumed = this.totalMacros.calories;
+      return (totalTarget - totalConsumed).toFixed(0);
+    },
+
+    // 6. Top 3 Foods
+    topFoods() {
+      return [...this.foodEntries]
+          .sort((a, b) => (b.calories || 0) - (a.calories || 0))
+          .slice(0, 3);
+    },
+
+    // 7. Chart Data
     doughnutChartData() {
       return {
         labels: ['Protein', 'Carbs', 'Fett'],
         datasets: [{
-          backgroundColor: ['#4f46e5', '#10b981', '#f43f5e'], // Indigo, Emerald, Rose
+          backgroundColor: ['#4f46e5', '#10b981', '#f43f5e'],
           borderWidth: 0,
           data: [this.totalMacros.protein, this.totalMacros.carbs, this.totalMacros.fat]
         }]
       }
     },
-
-    // DATEN FÜR WOCHEN-DIAGRAMM (Letzte 7 Tage)
     weeklyChartData() {
       const last7Days = [];
       const dataPoints = [];
-
-      // Schleife für die letzten 7 Tage (von heute rückwärts)
       for (let i = 6; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
-
-        // Label: Wochentag (z.B. "Mo")
         const label = d.toLocaleDateString('de-DE', { weekday: 'short' });
-        // Datumstring zum Vergleich: "2024-01-12"
         const dateStr = d.toISOString().split('T')[0];
 
         last7Days.push(label);
 
-        // Summiere alle Kalorien, die an diesem Datum ("date" vom Backend) gegessen wurden
+        // Summiere Kalorien wo das Datum übereinstimmt
         const dailySum = this.foodEntries
             .filter(entry => entry.date === dateStr)
             .reduce((sum, e) => sum + (e.calories || 0), 0);
-
         dataPoints.push(dailySum);
       }
-
       return {
         labels: last7Days,
-        datasets: [{
-          label: 'Kalorien',
-          backgroundColor: '#4f46e5',
-          borderRadius: 6,
-          data: dataPoints
-        }]
+        datasets: [{ label: 'Kalorien', backgroundColor: '#4f46e5', borderRadius: 6, data: dataPoints }]
       }
     }
   },
@@ -250,30 +286,21 @@ export default {
     this.fetchData();
   },
   methods: {
-    getPercentage(macro) {
-      const total = this.totalMacros.protein + this.totalMacros.carbs + this.totalMacros.fat;
-      if (total === 0) return 0;
-      return (this.totalMacros[macro] / total) * 100;
-    },
-
-    // AUTH HEADER BAUEN
     getAuthHeaders() {
       const token = localStorage.getItem('jwt_token');
-      return {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      };
+      return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
     },
 
-    // ECHTE DATEN LADEN
     async fetchData() {
       this.isLoading = true;
       try {
-        const response = await fetch(this.BASE_API_URL, {
-          headers: this.getAuthHeaders()
-        });
+        // 1. ZUERST USER DATEN LADEN (für Ziel & Gewicht)
+        await this.fetchUserData();
 
-        // Falls Token abgelaufen -> Rauswerfen
+        // 2. DANN FOOD ENTRIES LADEN
+        const response = await fetch(this.BASE_API_URL, { headers: this.getAuthHeaders() });
+
+        // Auth Check
         if (response.status === 403 || response.status === 401) {
           localStorage.removeItem('jwt_token');
           this.$router.push('/login');
@@ -282,13 +309,26 @@ export default {
 
         if (response.ok) {
           this.foodEntries = await response.json();
-          // Debugging: Zeige in der Konsole, was ankam (um Datumsfeld zu prüfen)
-          console.log("Geladene Einträge:", this.foodEntries);
         }
       } catch (e) {
-        console.error("Fehler beim Laden der Analyse:", e);
+        console.error("Fehler beim Laden:", e);
       } finally {
         this.isLoading = false;
+      }
+    },
+
+    async fetchUserData() {
+      try {
+        const response = await fetch(this.USER_API_URL, { headers: this.getAuthHeaders() });
+        if (response.ok) {
+          const data = await response.json();
+          // Übernehme echte Werte vom Backend
+          this.userGoal = data.goal;
+          this.targetCalories = data.targetCalories;
+          this.userWeight = data.currentWeight;
+        }
+      } catch (e) {
+        console.error("User Profil konnte nicht geladen werden", e);
       }
     }
   }
