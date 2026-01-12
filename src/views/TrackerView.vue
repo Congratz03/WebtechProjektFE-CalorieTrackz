@@ -63,7 +63,7 @@
           </div>
         </div>
 
-      </div
+      </div>
     </header>
 
     <main class="max-w-5xl mx-auto px-6 pb-20">
