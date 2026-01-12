@@ -140,8 +140,10 @@ export default {
   components: { FoodItem },
   data() {
     return {
+      // Deine Render-URLs
       BASE_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/foods',
-      SEARCH_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/search',
+      SEARCH_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/search', // Achtung: Prüfe ob dieser Pfad im Backend existiert!
+
       GOAL_CALORIES: 2000,
       foodEntries: [],
       newEntry: { name: '', calories: null, protein: 0, carbohydrates: 0, fat: 0 },
@@ -179,6 +181,24 @@ export default {
     this.fetchFoodEntries();
   },
   methods: {
+    getAuthHeaders() {
+      const token = localStorage.getItem('jwt_token');
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` //
+      };
+    },
+
+    handleAuthError(response) {
+      if (response.status === 403 || response.status === 401) {
+        alert("Deine Sitzung ist abgelaufen. Bitte logge dich erneut ein.");
+        localStorage.removeItem('jwt_token');
+        this.$router.push('/login');
+        return true;
+      }
+      return false;
+    },
+
     openAddModal() { this.showAddModal = true; },
     closeAddModal() {
       this.showAddModal = false;
@@ -186,41 +206,68 @@ export default {
       this.searchQuery = '';
       this.searchResults = [];
     },
+
     async searchFood() {
       if (this.searchQuery.length < 3) { this.searchResults = []; return; }
       this.isSearching = true;
       try {
-        const response = await fetch(`${this.SEARCH_API_URL}?query=${this.searchQuery}`);
+        const response = await fetch(`${this.SEARCH_API_URL}?query=${this.searchQuery}`, {
+          headers: this.getAuthHeaders()
+        });
+
+        if (this.handleAuthError(response)) return;
+
         if (response.ok) this.searchResults = await response.json();
       } catch (error) { console.error("Suche fehlgeschlagen", error); }
       finally { this.isSearching = false; }
     },
+
     selectProduct(product) {
       Object.assign(this.newEntry, product);
       this.searchResults = [];
       this.searchQuery = '';
     },
+
     async fetchFoodEntries() {
       this.isLoading = true;
       try {
-        const response = await fetch(this.BASE_API_URL);
+        const response = await fetch(this.BASE_API_URL, {
+          headers: this.getAuthHeaders()
+        });
+
+        if (this.handleAuthError(response)) return;
+
         if (response.ok) this.foodEntries = await response.json();
+        else throw new Error('Fehler beim Laden der Daten');
+
       } catch (error) { this.errorMessage = error.message; }
       finally { this.isLoading = false; }
     },
+
     async addFoodEntry() {
       try {
         const response = await fetch(this.BASE_API_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: this.getAuthHeaders(),
           body: JSON.stringify(this.newEntry)
         });
+
+        if (this.handleAuthError(response)) return;
+
         if (response.ok) { this.closeAddModal(); this.fetchFoodEntries(); }
       } catch (error) { console.error("Speichern fehlgeschlagen"); }
     },
+
     async deleteFoodEntry(id) {
       if (!confirm(`Eintrag wirklich entfernen?`)) return;
-      await fetch(`${this.BASE_API_URL}/${id}`, { method: 'DELETE' });
+
+      const response = await fetch(`${this.BASE_API_URL}/${id}`, {
+        method: 'DELETE',
+        headers: this.getAuthHeaders()
+      });
+
+      if (this.handleAuthError(response)) return;
+
       this.fetchFoodEntries();
     }
   }
