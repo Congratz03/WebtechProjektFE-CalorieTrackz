@@ -41,12 +41,29 @@
       </div>
 
       <div class="mt-6 grid grid-cols-3 gap-4">
-        <div v-for="(val, label) in { Protein: totalProtein, Carbs: totalCarbohydrates, Fett: totalFat }" :key="label"
-             class="bg-white/50 border border-slate-200/60 p-5 rounded-2xl text-center hover:bg-white transition-colors">
-          <div class="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-400 mb-1">{{ label }}</div>
-          <div class="text-xl font-bold text-slate-800">{{ val }}<span class="text-sm font-normal ml-0.5 text-slate-400">g</span></div>
+
+        <div class="bg-amber-50/50 border border-amber-100 p-5 rounded-2xl text-center hover:bg-amber-50 transition-colors">
+          <div class="text-[10px] uppercase font-bold tracking-[0.2em] text-amber-400 mb-1">Protein</div>
+          <div class="text-xl font-bold text-amber-700">
+            {{ totalProtein }}<span class="text-sm font-normal ml-0.5 text-amber-400">g</span>
+          </div>
         </div>
-      </div>
+
+        <div class="bg-emerald-50/50 border border-emerald-100 p-5 rounded-2xl text-center hover:bg-emerald-50 transition-colors">
+          <div class="text-[10px] uppercase font-bold tracking-[0.2em] text-emerald-400 mb-1">Kohlenhydrate</div>
+          <div class="text-xl font-bold text-emerald-700">
+            {{ totalCarbohydrates }}<span class="text-sm font-normal ml-0.5 text-emerald-400">g</span>
+          </div>
+        </div>
+
+        <div class="bg-rose-50/50 border border-rose-100 p-5 rounded-2xl text-center hover:bg-rose-50 transition-colors">
+          <div class="text-[10px] uppercase font-bold tracking-[0.2em] text-rose-400 mb-1">Fett</div>
+          <div class="text-xl font-bold text-rose-700">
+            {{ totalFat }}<span class="text-sm font-normal ml-0.5 text-rose-400">g</span>
+          </div>
+        </div>
+
+      </div
     </header>
 
     <main class="max-w-5xl mx-auto px-6 pb-20">
@@ -115,7 +132,14 @@
 
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                 <div v-for="macro in ['calories', 'protein', 'carbohydrates', 'fat']" :key="macro">
-                  <label class="block text-[10px] font-bold uppercase tracking-tighter text-slate-400 mb-1">{{ macro === 'calories' ? 'kcal' : macro }}</label>
+
+                  <label class="block text-[10px] font-bold uppercase tracking-tighter text-slate-400 mb-1">
+                    <span v-if="macro === 'calories'">Kcal</span>
+                    <span v-else-if="macro === 'protein'">Protein</span>
+                    <span v-else-if="macro === 'carbohydrates'">Kohlenhydrate</span>
+                    <span v-else-if="macro === 'fat'">Fett</span>
+                  </label>
+
                   <input type="number" v-model.number="newEntry[macro]" step="0.1"
                          class="w-full bg-slate-50 rounded-lg p-2 text-sm font-bold text-slate-700 border-none focus:ring-1 focus:ring-indigo-500/20">
                 </div>

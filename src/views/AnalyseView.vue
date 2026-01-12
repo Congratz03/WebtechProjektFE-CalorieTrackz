@@ -38,16 +38,16 @@
             </div>
           </div>
 
-          <div v-else-if="userGoal === 'BUILD_MUSCLE'" class="bg-gradient-to-r from-indigo-50 to-blue-50 p-8 rounded-[2rem] border border-indigo-100">
+          <div v-else-if="userGoal === 'BUILD_MUSCLE'" class="bg-gradient-to-r from-amber-50 to-orange-50 p-8 rounded-[2rem] border border-amber-100">
             <div class="flex justify-between items-end mb-4">
               <div>
-                <h3 class="text-xl font-bold text-indigo-900 mb-1">Protein Check</h3>
-                <p class="text-sm text-indigo-600 font-medium">Ziel: {{ proteinGoal }}g pro Tag für den Aufbau.</p>
+                <h3 class="text-xl font-bold text-amber-900 mb-1">Protein Check</h3>
+                <p class="text-sm text-amber-600 font-medium">Ziel: {{ proteinGoal }}g pro Tag für den Aufbau.</p>
               </div>
-              <span class="text-3xl font-black text-indigo-600">{{ averageDailyProtein }}g <span class="text-sm font-normal text-indigo-400">/ {{ proteinGoal }}g</span></span>
+              <span class="text-3xl font-black text-amber-600">{{ averageDailyProtein }}g <span class="text-sm font-normal text-amber-400">/ {{ proteinGoal }}g</span></span>
             </div>
-            <div class="h-4 w-full bg-white rounded-full overflow-hidden border border-indigo-100 relative">
-              <div class="h-full bg-indigo-500 transition-all duration-1000" :style="{ width: Math.min(proteinPercentage, 100) + '%' }"></div>
+            <div class="h-4 w-full bg-white rounded-full overflow-hidden border border-amber-100 relative">
+              <div class="h-full bg-amber-500 transition-all duration-1000" :style="{ width: Math.min(proteinPercentage, 100) + '%' }"></div>
             </div>
           </div>
 
@@ -77,7 +77,7 @@
           <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 relative overflow-hidden">
             <div class="relative z-10">
               <p class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Ø Tägl. Protein</p>
-              <p class="text-4xl font-light text-emerald-600">
+              <p class="text-4xl font-light text-amber-600">
                 {{ averageDailyProtein }} <span class="text-lg text-slate-400 font-normal">g</span>
               </p>
             </div>
@@ -96,7 +96,7 @@
         </div>
 
         <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
-          <h3 class="text-lg font-bold text-slate-800 mb-6">Verlauf (Letzte 7 Tage)</h3>
+          <h3 class="text-lg font-bold text-slate-800 mb-6">Verlauf (Kalorien der letzte 7 Tage)</h3>
           <div class="relative w-full h-64">
             <Bar :data="weeklyChartData" :options="barChartOptions" />
           </div>
@@ -251,9 +251,9 @@ export default {
     // 7. Chart Data
     doughnutChartData() {
       return {
-        labels: ['Protein', 'Carbs', 'Fett'],
+        labels: ['Protein', 'Kohlenhydrate', 'Fett'],
         datasets: [{
-          backgroundColor: ['#4f46e5', '#10b981', '#f43f5e'],
+          backgroundColor: ['#f59e0b', '#10b981', '#f43f5e'],
           borderWidth: 0,
           data: [this.totalMacros.protein, this.totalMacros.carbs, this.totalMacros.fat]
         }]
