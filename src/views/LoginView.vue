@@ -162,13 +162,38 @@ export default {
   },
   methods: {
     async handleLogin() {
-      // TODO: Login Logik kommt hier
-      console.log("Login mit:", this.loginData);
-      alert("Login Funktion noch nicht aktiv (Backend fehlt noch JWT)");
+      this.errorMessage = null;
+      console.log("Sende Login Request...", this.loginData);
+
+      try {
+        const response = await fetch('https://webtechprojektbe-calorietrackz.onrender.com/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(this.loginData)
+        });
+
+        if (!response.ok) {
+          throw new Error('Login fehlgeschlagen. Benutzername oder Passwort falsch.');
+        }
+
+        const data = await response.json();
+        const token = data.token;
+
+        console.log("Login erfolgreich! Token:", token);
+        localStorage.setItem('jwt_token', token);
+
+        // Weiterleitung zum Tracker
+        this.$router.push('/tracker');
+
+      } catch (e) {
+        console.error(e);
+        this.errorMessage = e.message;
+      }
     },
     async handleRegister() {
       this.errorMessage = null;
       try {
+        // Hier war es schon korrekt
         const response = await fetch('https://webtechprojektbe-calorietrackz.onrender.com/api/users/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -183,9 +208,10 @@ export default {
         console.log("Registriert:", data);
         alert("Account erfolgreich erstellt! Bitte jetzt einloggen.");
 
-        // Nach Erfolg zum Login wechseln
         this.isRegistering = false;
         this.step = 1;
+        // Optional: Username übernehmen für Komfort
+        this.loginData.username = this.registerData.username;
 
       } catch (e) {
         this.errorMessage = e.message;
