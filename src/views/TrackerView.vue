@@ -140,9 +140,8 @@ export default {
   components: { FoodItem },
   data() {
     return {
-      // Deine Render-URLs
       BASE_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/foods',
-      SEARCH_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/search', // Achtung: Prüfe ob dieser Pfad im Backend existiert!
+      SEARCH_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/search',
 
       GOAL_CALORIES: 2000,
       foodEntries: [],

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import TrackerView from '../views/TrackerView.vue'
 import LoginView from '../views/LoginView.vue'
+import AnalyseView from '../views/AnalyseView.vue'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,6 +20,12 @@ const router = createRouter({
             path: '/tracker',
             name: 'tracker',
             component: TrackerView,
+            meta: { requiresAuth: true }
+        },
+        {
+            path: '/analyse',
+            name: 'analyse',
+            component: AnalyseView,
             meta: { requiresAuth: true }
         }
     ]

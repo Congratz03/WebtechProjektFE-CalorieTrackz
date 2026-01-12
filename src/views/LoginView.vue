@@ -193,7 +193,6 @@ export default {
     async handleRegister() {
       this.errorMessage = null;
       try {
-        // Hier war es schon korrekt
         const response = await fetch('https://webtechprojektbe-calorietrackz.onrender.com/api/users/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
