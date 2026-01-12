@@ -21,13 +21,13 @@ const formatMacro = (value) => {
 
       <div v-if="food.protein || food.carbohydrates || food.fat" class="text-xs text-gray-500 mt-1 flex space-x-3">
         <span v-if="food.protein > 0">
-          <strong class="text-green-600">{{ formatMacro(food.protein) }}</strong> P
+          <strong class="text-indigo-400">{{ formatMacro(food.protein) }}</strong> P
         </span>
         <span v-if="food.carbohydrates > 0">
-          <strong class="text-yellow-600">{{ formatMacro(food.carbohydrates) }}</strong> KH
+          <strong class="text-emerald-500">{{ formatMacro(food.carbohydrates) }}</strong> KH
         </span>
         <span v-if="food.fat > 0">
-          <strong class="text-red-600">{{ formatMacro(food.fat) }}</strong> F
+          <strong class="text-rose-400">{{ formatMacro(food.fat) }}</strong> F
         </span>
       </div>
       </div>

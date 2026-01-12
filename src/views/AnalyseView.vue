@@ -149,7 +149,7 @@ export default {
 
     chartData() {
       return {
-        labels: ['Protein', 'Carbs', 'Fett'],
+        labels: ['Protein', 'Kohlenhydrate', 'Fett'],
         datasets: [
           {
             backgroundColor: ['#6366f1', '#10b981', '#f43f5e'],
