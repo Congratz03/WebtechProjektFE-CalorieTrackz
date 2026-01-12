@@ -166,6 +166,7 @@ export default {
     return {
       BASE_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/foods',
       SEARCH_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/search',
+      USER_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/users/me',
 
       GOAL_CALORIES: 2000,
       foodEntries: [],
