@@ -1,177 +1,149 @@
 <template>
-  <div class="min-h-screen flex flex-col">
+  <div class="min-h-screen bg-[#F9FAFB] text-slate-900 font-sans antialiased">
 
-    <nav class="fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 shadow z-50 flex items-center px-4 md:px-8">
-      <div class="text-2xl font-bold text-blue-600 mr-8 min-w-fit">CalorieTrackz</div>
-
-      <div class="flex space-x-4 md:space-x-8 text-sm font-medium overflow-x-auto">
-        <a href="#" class="nav-link active flex items-center p-2 text-blue-600 whitespace-nowrap">
-          <i class="fa-solid fa-home mr-2"></i> Home
-        </a>
-
-        <button @click="openAddModal"
-                class="nav-link flex items-center p-2 text-gray-500 hover:text-blue-600 transition whitespace-nowrap">
-          <i class="fa-solid fa-plus mr-2"></i> Eintrag Hinzufügen
-        </button>
-
-        <a href="#" class="nav-link flex items-center p-2 text-gray-500 hover:text-blue-600 transition whitespace-nowrap">
-          <i class="fa-solid fa-chart-bar mr-2"></i> Analyse
-        </a>
-
-        <a href="#" class="nav-link flex items-center p-2 text-gray-500 hover:text-blue-600 transition whitespace-nowrap">
-          <i class="fa-solid fa-user mr-2"></i> Profil
-        </a>
-
-        <a href="#" class="nav-link flex items-center p-2 text-gray-500 hover:text-blue-600 transition whitespace-nowrap">
-          <i class="fa-solid fa-cog mr-2"></i> Einstellungen
-        </a>
+    <nav class="fixed top-0 left-0 right-0 h-20 bg-white/70 backdrop-blur-xl border-b border-slate-200/60 z-50 flex items-center px-6 md:px-12 justify-between">
+      <div class="flex items-center space-x-2">
+        <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-200">
+          <i class="fa-solid fa-bolt text-white text-xs"></i>
+        </div>
+        <span class="text-xl font-bold tracking-tight text-slate-800">Calorie<span class="text-indigo-600">Trackz</span></span>
       </div>
+
+      <div class="hidden md:flex items-center space-x-10 text-[13px] uppercase tracking-[0.15em] font-bold text-slate-400">
+        <a href="#" class="text-indigo-600 border-b-2 border-indigo-600 pb-1">Home</a>
+        <a href="#" class="hover:text-slate-900 transition-colors">Analyse</a>
+        <a href="#" class="hover:text-slate-900 transition-colors">Profil</a>
+      </div>
+
+      <button @click="openAddModal"
+              class="bg-slate-900 text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-indigo-600 transition-all duration-300 shadow-sm active:scale-95">
+        + <span class="hidden sm:inline ml-1">Eintrag</span>
+      </button>
     </nav>
 
-    <div id="app-content" class="flex-grow pt-16">
+    <div id="app-content" class="pt-28 pb-20">
 
-      <header class="bg-white shadow p-6 md:p-8">
-        <h1 class="text-3xl font-bold text-gray-800">Überlick des Tages</h1>
-        <p class="text-sm text-gray-500 mt-1">Tägliche Zusammenfassung - <span>{{ currentDate }}</span></p>
+      <header class="max-w-5xl mx-auto px-6 mb-12">
+        <div class="mb-8">
+          <p class="text-indigo-600 text-xs font-bold uppercase tracking-widest mb-2">{{ currentDate }}</p>
+          <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight">Dein Überblick</h1>
+        </div>
 
-        <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-          <div class="bg-blue-500 text-white p-4 rounded-lg shadow-md">
-            <div class="text-xl font-bold">{{ GOAL_CALORIES }}</div>
-            <div class="text-xs opacity-80">Ziel (kcal)</div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="md:col-span-2 bg-white p-8 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.04)] border border-white flex flex-col justify-between relative overflow-hidden">
+            <div class="relative z-10">
+              <span class="text-slate-400 text-xs font-bold uppercase tracking-widest">Heute konsumiert</span>
+              <div class="flex items-baseline space-x-2 mt-2">
+                <span class="text-6xl font-light text-slate-900">{{ consumedCalories }}</span>
+                <span class="text-xl text-slate-400 font-medium">/ {{ GOAL_CALORIES }} kcal</span>
+              </div>
+            </div>
+            <div class="mt-8 h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full bg-indigo-500 transition-all duration-1000 ease-out"
+                   :style="{ width: Math.min((consumedCalories / GOAL_CALORIES) * 100, 100) + '%' }"></div>
+            </div>
           </div>
-          <div class="bg-white p-4 rounded-lg shadow-md">
-            <div class="text-xl font-bold text-gray-800">{{ consumedCalories }}</div>
-            <div class="text-xs text-gray-500">Konsumiert</div>
-          </div>
-          <div :class="remainingClass" class="p-4 rounded-lg shadow-md">
-            <div class="text-xl font-bold">{{ Math.abs(remainingCalories) }}</div>
-            <div class="text-xs">{{ remainingDisplayText }}</div>
+
+          <div :class="remainingCalories >= 0 ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100'"
+               class="p-8 rounded-[2rem] border flex flex-col justify-center transition-colors duration-500">
+            <span class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">{{ remainingDisplayText }}</span>
+            <div class="text-4xl font-bold tracking-tight" :class="remainingCalories >= 0 ? 'text-emerald-600' : 'text-rose-600'">
+              {{ Math.abs(remainingCalories) }} <span class="text-lg font-medium opacity-70">kcal</span>
+            </div>
           </div>
         </div>
 
-        <div class="mt-4 grid grid-cols-3 gap-4 text-center">
-          <div class="bg-green-100 text-green-700 p-3 rounded-lg shadow-sm">
-            <div class="text-lg font-bold">{{ totalProtein }} g</div>
-            <div class="text-xs">Protein</div>
-          </div>
-          <div class="bg-yellow-100 text-yellow-700 p-3 rounded-lg shadow-sm">
-            <div class="text-lg font-bold">{{ totalCarbohydrates }} g</div>
-            <div class="text-xs">Kohlenhydrate</div>
-          </div>
-          <div class="bg-red-100 text-red-700 p-3 rounded-lg shadow-sm">
-            <div class="text-lg font-bold">{{ totalFat }} g</div>
-            <div class="text-xs">Fett</div>
+        <div class="mt-6 grid grid-cols-3 gap-4">
+          <div v-for="(val, label) in { Protein: totalProtein, Carbs: totalCarbohydrates, Fett: totalFat }" :key="label"
+               class="bg-white/50 border border-slate-200/60 p-5 rounded-2xl text-center hover:bg-white transition-colors">
+            <div class="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-400 mb-1">{{ label }}</div>
+            <div class="text-xl font-bold text-slate-800">{{ val }}<span class="text-sm font-normal ml-0.5 text-slate-400">g</span></div>
           </div>
         </div>
-
       </header>
 
-      <main class="p-4 md:p-8 max-w-4xl mx-auto w-full">
-        <h2 class="text-xl font-semibold text-gray-700 mb-4">Deine Einträge heute</h2>
-
-        <div v-if="isLoading" class="text-center py-12 text-gray-500">
-          <i class="fa-solid fa-spinner fa-spin text-3xl"></i>
-          <p class="mt-2">Lade Einträge...</p>
+      <main class="max-w-5xl mx-auto px-6">
+        <div class="flex items-center justify-between mb-8 border-b border-slate-200 pb-4">
+          <h2 class="text-lg font-bold text-slate-800 tracking-tight">Heutige Mahlzeiten</h2>
+          <div class="text-xs font-medium px-3 py-1 bg-slate-100 text-slate-500 rounded-full">
+            {{ foodEntries.length }} Einträge
+          </div>
         </div>
 
-        <p v-else-if="errorMessage && foodEntries.length === 0" class="text-red-500 text-center py-4">
-          Konnte Daten nicht laden: {{ errorMessage }}.<br>
-          <span class="text-sm text-gray-400">Versuchte URL: {{ BASE_API_URL }}</span>
-        </p>
+        <div v-if="isLoading" class="flex flex-col items-center justify-center py-20 text-slate-400">
+          <div class="w-10 h-10 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+          <p class="text-sm font-medium">Daten werden synchronisiert...</p>
+        </div>
 
-        <p v-else-if="foodEntries.length === 0" class="text-center text-gray-500 mt-8">
-          Noch keine Einträge vorhanden.
-        </p>
+        <div v-else-if="foodEntries.length === 0" class="bg-white border-2 border-dashed border-slate-200 rounded-[2rem] py-20 text-center">
+          <i class="fa-solid fa-utensils text-slate-200 text-4xl mb-4"></i>
+          <p class="text-slate-400 font-medium">Noch keine Einträge für heute.</p>
+          <button @click="openAddModal" class="mt-4 text-indigo-600 text-sm font-bold hover:underline">Jetzt erste Mahlzeit erfassen</button>
+        </div>
 
-        <ul v-else class="space-y-3">
+        <ul v-else class="grid grid-cols-1 gap-4">
           <FoodItem
               v-for="food in foodEntries"
               :key="food.id"
               :food="food"
               @delete="deleteFoodEntry"
+              class="group"
           />
         </ul>
       </main>
-
     </div>
 
-    <div v-show="showAddModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-      <div class="bg-white p-6 rounded-lg shadow-xl w-11/12 max-w-md">
-        <h3 class="text-xl font-bold mb-4">Neuen Eintrag hinzufügen</h3>
+    <transition name="modal">
+      <div v-show="showAddModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" @click="closeAddModal"></div>
 
-        <form @submit.prevent="addFoodEntry">
-
-          <div class="mb-4">
-            <label for="food-search" class="block text-sm font-medium text-gray-700">Lebensmittel suchen (CalorieNinjas)</label>
-            <div class="relative">
-              <input type="text" id="food-search" v-model="searchQuery" @input="searchFood"
-                     placeholder="z.B. 300g prime rib and mashed potatoes..."
-                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
-              <i v-if="isSearching" class="fa-solid fa-spinner fa-spin absolute right-3 top-1/2 -translate-y-1/2 text-blue-500"></i>
-            </div>
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg relative z-10 overflow-hidden">
+          <div class="px-8 pt-8 pb-6 border-b border-slate-50">
+            <h3 class="text-2xl font-bold text-slate-900 tracking-tight">Neuer Eintrag</h3>
+            <p class="text-sm text-slate-400 mt-1">Nutze die Suche für präzise Nährwerte.</p>
           </div>
 
-          <div v-if="searchResults.length > 0" class="mb-4 border border-gray-200 rounded-md max-h-40 overflow-y-auto">
-            <ul class="divide-y divide-gray-100">
-              <li v-for="(product, index) in searchResults" :key="index"
-                  @click="selectProduct(product)"
-                  class="p-2 text-sm cursor-pointer hover:bg-blue-50 transition flex justify-between items-center">
-                <span class="font-medium text-gray-800 truncate">{{ product.name }}</span>
-                <span class="text-blue-600 font-semibold ml-2 min-w-fit">
-                                {{ product.calories }} kcal
-                            </span>
-              </li>
-            </ul>
-          </div>
+          <form @submit.prevent="addFoodEntry" class="p-8">
+            <div class="mb-6">
+              <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2 ml-1">Suchen</label>
+              <div class="relative group">
+                <input type="text" v-model="searchQuery" @input="searchFood"
+                       placeholder="z.B. 300g prime rib and mashed potatoes "
+                       class="w-full bg-slate-50 border-none rounded-2xl p-4 pr-12 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-slate-300 text-slate-700">
+                <i v-if="isSearching" class="fa-solid fa-spinner fa-spin absolute right-4 top-1/2 -translate-y-1/2 text-indigo-500"></i>
+                <i v-else class="fa-solid fa-search absolute right-4 top-1/2 -translate-y-1/2 text-slate-200 group-focus-within:text-indigo-400 transition-colors"></i>
+              </div>
 
-          <div class="mb-4">
-            <label for="food-name" class="block text-sm font-medium text-gray-700">Name des Lebensmittels</label>
-            <input type="text" id="food-name" v-model="newEntry.name" required
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
-          </div>
-
-          <div class="grid grid-cols-2 gap-4 mb-6">
-
-            <div>
-              <label for="food-calories" class="block text-sm font-medium text-gray-700">Kalorien (kcal)</label>
-              <input type="number" id="food-calories" v-model.number="newEntry.calories" required min="1"
-                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
+              <div v-if="searchResults.length > 0" class="mt-2 bg-white border border-slate-100 rounded-2xl shadow-xl max-h-48 overflow-y-auto">
+                <div v-for="product in searchResults" :key="product.name" @click="selectProduct(product)"
+                     class="p-4 hover:bg-indigo-50 cursor-pointer flex justify-between items-center border-b border-slate-50 last:border-0 transition-colors">
+                  <span class="font-bold text-sm text-slate-700">{{ product.name }}</span>
+                  <span class="text-xs font-bold text-indigo-500">{{ product.calories }} kcal</span>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label for="food-protein" class="block text-sm font-medium text-gray-700">Protein (g)</label>
-              <input type="number" id="food-protein" v-model.number="newEntry.protein" step="0.1" min="0"
-                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
+            <div class="grid grid-cols-1 gap-4 mb-8">
+              <input type="text" v-model="newEntry.name" placeholder="Name" required
+                     class="w-full border-b border-slate-100 py-2 focus:border-indigo-500 outline-none transition-colors font-medium">
+
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                <div v-for="macro in ['calories', 'protein', 'carbohydrates', 'fat']" :key="macro">
+                  <label class="block text-[10px] font-bold uppercase tracking-tighter text-slate-400 mb-1">{{ macro === 'calories' ? 'kcal' : macro }}</label>
+                  <input type="number" v-model.number="newEntry[macro]" step="0.1"
+                         class="w-full bg-slate-50 rounded-lg p-2 text-sm font-bold text-slate-700 border-none focus:ring-1 focus:ring-indigo-500/20">
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label for="food-carbs" class="block text-sm font-medium text-gray-700">Kohlenhydrate (g)</label>
-              <input type="number" id="food-carbs" v-model.number="newEntry.carbohydrates" step="0.1" min="0"
-                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
+            <div class="flex space-x-3">
+              <button type="button" @click="closeAddModal" class="flex-1 py-4 text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors">Abbrechen</button>
+              <button type="submit" class="flex-[2] bg-indigo-600 text-white rounded-2xl py-4 text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all">Speichern</button>
             </div>
-
-            <div>
-              <label for="food-fat" class="block text-sm font-medium text-gray-700">Fett (g)</label>
-              <input type="number" id="food-fat" v-model.number="newEntry.fat" step="0.1" min="0"
-                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
-            </div>
-          </div>
-
-          <div class="flex justify-end space-x-3">
-            <button type="button" @click="closeAddModal"
-                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition">
-              Abbrechen
-            </button>
-            <button type="submit"
-                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
-              Speichern
-            </button>
-          </div>
-        </form>
-
-        <p v-if="errorMessage && !isLoading" class="text-red-500 mt-3">{{ errorMessage }}</p>
+          </form>
+        </div>
       </div>
-    </div>
+    </transition>
   </div>
 </template>
 
@@ -179,18 +151,11 @@
 import FoodItem from './components/FoodItem.vue';
 
 export default {
-  components: {
-    FoodItem
-  },
+  components: { FoodItem },
   data() {
     return {
-      // Konstanten
-
       BASE_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/foods',
       SEARCH_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/search',
-      DETAIL_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/search/details',
-
-      // Zustand
       GOAL_CALORIES: 2000,
       foodEntries: [],
       newEntry: { name: '', calories: null, protein: 0, carbohydrates: 0, fat: 0 },
@@ -219,15 +184,8 @@ export default {
     remainingCalories() {
       return this.GOAL_CALORIES - this.consumedCalories;
     },
-    remainingClass() {
-      return this.remainingCalories >= 0
-          ? 'bg-green-500 text-white'
-          : 'bg-red-500 text-white';
-    },
     remainingDisplayText() {
-      return this.remainingCalories >= 0
-          ? 'Verbleibend'
-          : 'Überschuss (kcal)';
+      return this.remainingCalories >= 0 ? 'Verbleibend' : 'Überschuss';
     }
   },
   mounted() {
@@ -235,88 +193,47 @@ export default {
     this.fetchFoodEntries();
   },
   methods: {
-    openAddModal() {
-      this.showAddModal = true;
-      this.errorMessage = null;
-    },
+    openAddModal() { this.showAddModal = true; },
     closeAddModal() {
       this.showAddModal = false;
       this.newEntry = { name: '', calories: null, protein: 0, carbohydrates: 0, fat: 0 };
       this.searchQuery = '';
       this.searchResults = [];
     },
-
-    // --- SUCHFUNKTION ---
     async searchFood() {
-      if (this.searchQuery.length < 3) {
-        this.searchResults = [];
-        return;
-      }
+      if (this.searchQuery.length < 3) { this.searchResults = []; return; }
       this.isSearching = true;
-      this.errorMessage = null;
-
       try {
-        const response = await fetch(`${this.SEARCH_API_URL}?query=${this.searchQuery}`, {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' }
-        });
-
-        if (!response.ok) {
-          throw new Error(`Suchfehler! Status: ${response.status}`);
-        }
-
-        const products = await response.json();
-        this.searchResults = products;
-
-      } catch (error) {
-        console.error("Fehler bei der Suche:", error);
-      } finally {
-        this.isSearching = false;
-      }
+        const response = await fetch(`${this.SEARCH_API_URL}?query=${this.searchQuery}`);
+        if (response.ok) this.searchResults = await response.json();
+      } catch (error) { console.error("Suche fehlgeschlagen", error); }
+      finally { this.isSearching = false; }
     },
-
-    // --- AUSWAHLFUNKTION ---
     selectProduct(product) {
-      this.newEntry.name = product.name;
-      this.newEntry.calories = product.calories;
-      this.newEntry.protein = product.protein;
-      this.newEntry.carbohydrates = product.carbohydrates;
-      this.newEntry.fat = product.fat;
-
-      // Suche zurücksetzen
+      Object.assign(this.newEntry, product);
       this.searchResults = [];
       this.searchQuery = '';
     },
-
     async fetchFoodEntries() {
       this.isLoading = true;
       try {
         const response = await fetch(this.BASE_API_URL);
-        if (!response.ok) throw new Error("Fehler beim Laden");
-        this.foodEntries = await response.json();
-      } catch (error) {
-        this.errorMessage = error.message;
-      } finally {
-        this.isLoading = false;
-      }
+        if (response.ok) this.foodEntries = await response.json();
+      } catch (error) { this.errorMessage = error.message; }
+      finally { this.isLoading = false; }
     },
     async addFoodEntry() {
-      if (!this.newEntry.name || !this.newEntry.calories) return;
       try {
         const response = await fetch(this.BASE_API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(this.newEntry)
         });
-        if (!response.ok) throw new Error("Speichern fehlgeschlagen");
-        this.closeAddModal();
-        this.fetchFoodEntries();
-      } catch (error) {
-        this.errorMessage = error.message;
-      }
+        if (response.ok) { this.closeAddModal(); this.fetchFoodEntries(); }
+      } catch (error) { console.error("Speichern fehlgeschlagen"); }
     },
     async deleteFoodEntry(id) {
-      if (!confirm(`Löschen?`)) return;
+      if (!confirm(`Eintrag wirklich entfernen?`)) return;
       await fetch(`${this.BASE_API_URL}/${id}`, { method: 'DELETE' });
       this.fetchFoodEntries();
     }
@@ -325,18 +242,21 @@ export default {
 </script>
 
 <style scoped>
-.nav-link {
-  transition: color 0.2s;
+/* Modal Animation */
+.modal-enter-active, .modal-leave-active {
+  transition: all 0.3s ease;
 }
-.nav-link.active {
-  color: #3b82f6;
-  font-weight: 600;
-}
-.delete-btn {
+.modal-enter-from, .modal-leave-to {
   opacity: 0;
-  transition: opacity 0.2s, background-color 0.2s;
+  transform: scale(1.05);
 }
-.food-item:hover .delete-btn {
-  opacity: 1;
+
+/* Custom Scrollbar for Search */
+div::-webkit-scrollbar {
+  width: 4px;
+}
+div::-webkit-scrollbar-thumb {
+  background: #E2E8F0;
+  border-radius: 10px;
 }
 </style>
