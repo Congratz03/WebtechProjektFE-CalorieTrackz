@@ -131,6 +131,13 @@
           </div>
 
           <div class="grid grid-cols-2 gap-4 mb-6">
+
+            <div>
+              <label for="food-calories" class="block text-sm font-medium text-gray-700">Kalorien (kcal)</label>
+              <input type="number" id="food-calories" v-model.number="newEntry.calories" required min="1"
+                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
             <div>
               <label for="food-protein" class="block text-sm font-medium text-gray-700">Protein (g)</label>
               <input type="number" id="food-protein" v-model.number="newEntry.protein" step="0.1" min="0"
