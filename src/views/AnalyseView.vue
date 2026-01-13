@@ -301,7 +301,7 @@ export default {
         const response = await fetch(this.BASE_API_URL, { headers: this.getAuthHeaders() });
 
         // Auth Check
-        if (response.status === 403 || response.status === 401) {
+        if (response && (response.status === 403 || response.status === 401)) {
           localStorage.removeItem('jwt_token');
           this.$router.push('/login');
           return;
