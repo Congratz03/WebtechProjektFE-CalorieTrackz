@@ -447,6 +447,7 @@ export default {
         const response = await fetch(this.RECIPE_API_URL, {
           headers: this.getAuthHeaders()
         });
+        if (this.handleAuthError(response)) return;
         if (response.ok) {
           this.recipes = await response.json();
         }
