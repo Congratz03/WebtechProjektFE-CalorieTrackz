@@ -7,15 +7,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - [cite_start]uses: actions/checkout@v2 [cite: 301]
+      - uses: actions/checkout@v2
 
-      - [cite_start]name: Use node 16.13 [cite: 306]
-                      [cite_start]uses: actions/setup-node@v2 [cite: 310]
-                      with:
-                            [cite_start]node-version: 16.13.1 [cite: 323]
+      - name: Use node 16.13
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.13.1
 
-      - [cite_start]name: Install dependencies [cite: 324]
-                      [cite_start]run: npm ci [cite: 324]
+      - name: Install dependencies
+        run: npm ci
 
-      - [cite_start]name: Run tests [cite: 325]
-                      [cite_start]run: npm run test:unit [cite: 326]
+      - name: Run tests
+        run: npm run test:unit
