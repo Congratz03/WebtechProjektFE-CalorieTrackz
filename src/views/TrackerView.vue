@@ -463,11 +463,33 @@ export default {
       this.showLoadRecipeModal = false;
 
       for (const ingredient of recipe.ingredients) {
-        this.newEntry = { ...ingredient };
-        await this.addFoodEntry();
+
+        const entryPayLoad = {
+          name: ingredient.name,
+          calories: ingredient.calories,
+          protein: ingredient.protein,
+          carbohydrates: ingredient.carbohydrates,
+          fat: ingredient.fat
+        };
+
+        await this.createEntryDirectly(entryPayLoad);
       }
 
+      await this.fetchFoodEntries();
       this.isLoading = false;
+    },
+
+    async createEntryDirectly(payload) {
+      try {
+        const response = await fetch(this.BASE_API_URL, {
+          method: 'POST',
+          headers: this.getAuthHeaders(),
+          body: JSON.stringify(payload)
+        });
+
+      } catch (e) {
+        console.error("Fehler beim Einfügen der Zutat", e);
+      }
     },
 
     async deleteRecipe(id) {
