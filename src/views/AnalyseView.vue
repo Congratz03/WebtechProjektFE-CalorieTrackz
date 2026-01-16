@@ -98,7 +98,8 @@
         <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
           <h3 class="text-lg font-bold text-slate-800 mb-6">Verlauf (Kalorien der letzte 7 Tage)</h3>
           <div class="relative w-full h-64">
-            <Bar :data="weeklyChartData" :options="barChartOptions" />
+            <!-- HIER GEÄNDERT: 'Chart' Komponente statt 'Bar' für gemischte Charts -->
+            <Chart type="bar" :data="weeklyChartData" :options="barChartOptions" />
           </div>
         </div>
 
@@ -151,31 +152,29 @@ import {
   BarElement,
   CategoryScale,
   LinearScale,
-  PointElement, // <-- NEU: Für die Punkte der Linie
-  LineElement   // <-- NEU: Für die Linie selbst
+  PointElement,
+  LineElement
 } from 'chart.js'
-import { Doughnut, Bar } from 'vue-chartjs'
+// HIER GEÄNDERT: Wir importieren die generische 'Chart' Komponente
+import { Doughnut, Chart } from 'vue-chartjs'
 
-// Registrierung erweitert
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement)
 
 export default {
-  components: { Doughnut, Bar },
+  // HIER GEÄNDERT: 'Chart' registrieren
+  components: { Doughnut, Chart },
   data() {
     return {
-      // ECHTE RENDER URLs
       BASE_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/foods',
       USER_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/users/me',
 
       foodEntries: [],
       isLoading: true,
 
-      // Initiale Defaults (werden vom Backend überschrieben)
       userGoal: 'LOSE_WEIGHT',
       targetCalories: 2000,
       userWeight: 80,
 
-      // Chart Config
       doughnutChartOptions: {
         responsive: true,
         maintainAspectRatio: false,
@@ -194,7 +193,6 @@ export default {
     }
   },
   computed: {
-    // 1. Makros summieren
     totalMacros() {
       return this.foodEntries.reduce((acc, item) => {
         acc.protein += item.protein || 0;
@@ -205,14 +203,12 @@ export default {
       }, { protein: 0, carbs: 0, fat: 0, calories: 0 });
     },
 
-    // 2. Einzigartige Tage zählen
     uniqueDaysCount() {
       if (this.foodEntries.length === 0) return 0;
       const dates = this.foodEntries.map(entry => entry.date || entry.createdAt?.split('T')[0] || 'unknown');
       return new Set(dates).size || 1;
     },
 
-    // 3. KPIs
     averageDailyCalories() {
       if (this.uniqueDaysCount === 0) return 0;
       return (this.totalMacros.calories / this.uniqueDaysCount).toFixed(0);
@@ -222,9 +218,7 @@ export default {
       return (this.totalMacros.protein / this.uniqueDaysCount).toFixed(0);
     },
 
-    // 4. Protein Ziel Berechnung
     proteinGoal() {
-      // Bei Muskelaufbau mehr Protein (z.B. 2g/kg), sonst Standard (1.5g/kg)
       const multiplier = this.userGoal === 'BUILD_MUSCLE' ? 2.0 : 1.5;
       return (this.userWeight * multiplier).toFixed(0);
     },
@@ -234,38 +228,23 @@ export default {
       return (this.averageDailyProtein / goal) * 100;
     },
 
-    // 5. Wochenbilanz (Soll vs. Ist)
     weeklyDeficit() {
       if (this.uniqueDaysCount === 0) return 0;
-      // "Soll" für die getrackten Tage
       const totalTarget = this.targetCalories * this.uniqueDaysCount;
-      // "Ist"
       const totalConsumed = this.totalMacros.calories;
       return (totalTarget - totalConsumed).toFixed(0);
     },
 
-    // 6. Top 3 Foods
     topFoods() {
       return [...this.foodEntries]
           .sort((a, b) => (b.calories || 0) - (a.calories || 0))
           .slice(0, 3);
     },
 
-    // 7. Chart Data (MIT NEUER ZIELLINIE)
-    doughnutChartData() {
-      return {
-        labels: ['Protein', 'Kohlenhydrate', 'Fett'],
-        datasets: [{
-          backgroundColor: ['#f59e0b', '#10b981', '#f43f5e'],
-          borderWidth: 0,
-          data: [this.totalMacros.protein, this.totalMacros.carbs, this.totalMacros.fat]
-        }]
-      }
-    },
     weeklyChartData() {
       const last7Days = [];
       const dataPoints = [];
-      const goalPoints = []; // 1. Array für die Ziellinie
+      const goalPoints = [];
 
       for (let i = 6; i >= 0; i--) {
         const d = new Date();
@@ -275,39 +254,34 @@ export default {
 
         last7Days.push(label);
 
-        // Summiere Kalorien wo das Datum übereinstimmt
         const dailySum = this.foodEntries
             .filter(entry => entry.date === dateStr)
             .reduce((sum, e) => sum + (e.calories || 0), 0);
 
         dataPoints.push(dailySum);
-
-        // 2. Zielwert für jeden Tag hinzufügen
         goalPoints.push(this.targetCalories);
       }
 
       return {
         labels: last7Days,
         datasets: [
-          // Datensatz 1: Deine Balken (wie vorher)
           {
             type: 'bar',
             label: 'Kalorien',
             backgroundColor: '#4f46e5',
             borderRadius: 6,
             data: dataPoints,
-            order: 2 // Liegt "hinter" der Linie
+            order: 2
           },
-          // Datensatz 2: Die ROTE LINIE (Neu)
           {
             type: 'line',
             label: 'Ziel',
-            borderColor: '#ef4444', // Rot (Tailwind red-500)
+            borderColor: '#ef4444',
             borderWidth: 2,
-            borderDash: [5, 5], // Gestrichelt
-            pointRadius: 0, // Keine Punkte anzeigen, nur die Linie
+            borderDash: [5, 5],
+            pointRadius: 0,
             data: goalPoints,
-            order: 1 // Liegt "vor" den Balken
+            order: 1
           }
         ]
       }
@@ -325,13 +299,9 @@ export default {
     async fetchData() {
       this.isLoading = true;
       try {
-        // 1. ZUERST USER DATEN LADEN (für Ziel & Gewicht)
         await this.fetchUserData();
-
-        // 2. DANN FOOD ENTRIES LADEN
         const response = await fetch(this.BASE_API_URL, { headers: this.getAuthHeaders() });
 
-        // Auth Check
         if (response && (response.status === 403 || response.status === 401)) {
           localStorage.removeItem('jwt_token');
           this.$router.push('/login');
@@ -353,7 +323,6 @@ export default {
         const response = await fetch(this.USER_API_URL, { headers: this.getAuthHeaders() });
         if (response.ok) {
           const data = await response.json();
-          // Übernehme echte Werte vom Backend
           this.userGoal = data.goal;
           this.targetCalories = data.targetCalories;
           this.userWeight = data.currentWeight;
