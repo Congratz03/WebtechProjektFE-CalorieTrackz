@@ -80,8 +80,30 @@
 
     <!-- MAIN: Liste der Mahlzeiten -->
     <main class="max-w-5xl mx-auto px-6 pb-20">
+
+      <!-- FILTER TOGGLE BUTTONS (NEU) -->
+      <div class="flex justify-center mb-8 bg-white p-1.5 rounded-full shadow-sm border border-slate-100 w-fit mx-auto">
+        <button
+            @click="setFilter('today')"
+            :class="currentFilter === 'today' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'"
+            class="px-6 py-2 rounded-full text-sm font-bold transition-all duration-300"
+        >
+          Heute
+        </button>
+        <button
+            @click="setFilter('all')"
+            :class="currentFilter === 'all' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'"
+            class="px-6 py-2 rounded-full text-sm font-bold transition-all duration-300"
+        >
+          Gesamtverlauf
+        </button>
+      </div>
+
       <div class="flex items-center justify-between mb-8 border-b border-slate-200 pb-4">
-        <h2 class="text-lg font-bold text-slate-800 tracking-tight">Heutige Mahlzeiten</h2>
+        <!-- Dynamische Überschrift je nach Filter -->
+        <h2 class="text-lg font-bold text-slate-800 tracking-tight">
+          {{ currentFilter === 'today' ? 'Heutige Mahlzeiten' : 'Alle Einträge' }}
+        </h2>
         <div class="text-xs font-medium px-3 py-1 bg-slate-100 text-slate-500 rounded-full">
           {{ foodEntries.length }} Einträge
         </div>
@@ -94,7 +116,9 @@
 
       <div v-else-if="foodEntries.length === 0" class="bg-white border-2 border-dashed border-slate-200 rounded-[2rem] py-20 text-center">
         <i class="fa-solid fa-utensils text-slate-200 text-4xl mb-4"></i>
-        <p class="text-slate-400 font-medium">Noch keine Einträge für heute.</p>
+        <p class="text-slate-400 font-medium">
+          {{ currentFilter === 'today' ? 'Noch keine Einträge für heute.' : 'Noch gar keine Einträge vorhanden.' }}
+        </p>
         <button @click="openAddModal" class="mt-4 text-indigo-600 text-sm font-bold hover:underline">Jetzt erste Mahlzeit erfassen</button>
       </div>
 
@@ -233,7 +257,7 @@
 import FoodItem from '../components/FoodItem.vue';
 
 export default {
-  components: { FoodItem },
+  components: {FoodItem},
   data() {
     return {
       BASE_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/foods',
@@ -243,13 +267,16 @@ export default {
 
       GOAL_CALORIES: 2000,
       foodEntries: [],
-      newEntry: { name: '', calories: null, protein: 0, carbohydrates: 0, fat: 0 },
+      newEntry: {name: '', calories: null, protein: 0, carbohydrates: 0, fat: 0},
       showAddModal: false,
       isLoading: true,
       currentDate: '',
       searchQuery: '',
       searchResults: [],
       isSearching: false,
+
+      // --- NEU: FILTER LOGIK ---
+      currentFilter: 'today', // Standardmäßig 'today'
 
       // --- Rezept Variablen ---
       recipes: [],
@@ -281,7 +308,7 @@ export default {
   },
   mounted() {
     this.currentDate = new Date().toLocaleDateString('de-DE', {weekday: 'long', day: 'numeric', month: 'long'});
-    this.fetchFoodEntries();
+    this.fetchFoodEntries(); // Lädt jetzt standardmäßig 'today', weil currentFilter so gesetzt ist
     this.fetchUserGoal();
   },
   methods: {
@@ -303,16 +330,21 @@ export default {
       return false;
     },
 
-    openAddModal() { this.showAddModal = true; },
+    openAddModal() {
+      this.showAddModal = true;
+    },
     closeAddModal() {
       this.showAddModal = false;
-      this.newEntry = { name: '', calories: null, protein: 0, carbohydrates: 0, fat: 0 };
+      this.newEntry = {name: '', calories: null, protein: 0, carbohydrates: 0, fat: 0};
       this.searchQuery = '';
       this.searchResults = [];
     },
 
     async searchFood() {
-      if (this.searchQuery.length < 3) { this.searchResults = []; return; }
+      if (this.searchQuery.length < 3) {
+        this.searchResults = [];
+        return;
+      }
       this.isSearching = true;
       try {
         const response = await fetch(`${this.SEARCH_API_URL}?query=${this.searchQuery}`, {
@@ -322,8 +354,11 @@ export default {
         if (this.handleAuthError(response)) return;
 
         if (response.ok) this.searchResults = await response.json();
-      } catch (error) { console.error("Suche fehlgeschlagen", error); }
-      finally { this.isSearching = false; }
+      } catch (error) {
+        console.error("Suche fehlgeschlagen", error);
+      } finally {
+        this.isSearching = false;
+      }
     },
 
     selectProduct(product) {
@@ -332,10 +367,25 @@ export default {
       this.searchQuery = '';
     },
 
+    // --- NEU: FILTER METHODE ---
+    setFilter(mode) {
+      this.currentFilter = mode;
+      this.fetchFoodEntries(); // Neu laden mit neuem Filter
+    },
+
+    // --- ANGEPASST: FETCH METHODE ---
     async fetchFoodEntries() {
       this.isLoading = true;
       try {
-        const response = await fetch(this.BASE_API_URL, {
+        // Basis-URL
+        let url = this.BASE_API_URL;
+
+        // Falls wir nur HEUTE wollen, Parameter anhängen
+        if (this.currentFilter === 'today') {
+          url += '?mode=today';
+        }
+
+        const response = await fetch(url, {
           headers: this.getAuthHeaders()
         });
 
@@ -344,9 +394,13 @@ export default {
         if (response.ok) this.foodEntries = await response.json();
         else throw new Error('Fehler beim Laden der Daten');
 
-      } catch (error) { console.error(error); }
-      finally { this.isLoading = false; }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        this.isLoading = false;
+      }
     },
+    // --------------------------------
 
     async addFoodEntry() {
       try {
@@ -358,8 +412,13 @@ export default {
 
         if (this.handleAuthError(response)) return;
 
-        if (response.ok) { this.closeAddModal(); this.fetchFoodEntries(); }
-      } catch (error) { console.error("Speichern fehlgeschlagen"); }
+        if (response.ok) {
+          this.closeAddModal();
+          this.fetchFoodEntries();
+        }
+      } catch (error) {
+        console.error("Speichern fehlgeschlagen");
+      }
     },
 
     async deleteFoodEntry(id) {
@@ -493,7 +552,7 @@ export default {
     },
 
     async deleteRecipe(id) {
-      if(!confirm("Rezept wirklich löschen?")) return;
+      if (!confirm("Rezept wirklich löschen?")) return;
       await fetch(`${this.RECIPE_API_URL}/${id}`, {
         method: 'DELETE',
         headers: this.getAuthHeaders()
@@ -509,6 +568,7 @@ export default {
 .modal-enter-active, .modal-leave-active {
   transition: all 0.3s ease;
 }
+
 .modal-enter-from, .modal-leave-to {
   opacity: 0;
   transform: scale(1.05);
@@ -517,6 +577,7 @@ export default {
 div::-webkit-scrollbar {
   width: 4px;
 }
+
 div::-webkit-scrollbar-thumb {
   background: #E2E8F0;
   border-radius: 10px;
