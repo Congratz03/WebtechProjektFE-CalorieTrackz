@@ -59,4 +59,29 @@ describe('AnalyseView.vue', () => {
 
         expect(wrapper.find('.animate-spin').exists()).toBe(false)
     })
+
+
+    // Test 6: Berechnung der KPIs im Frontend
+    it('sollte die durchschnittlichen Kalorien korrekt berechnen', async () => {
+        // Mock User
+        fetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ targetCalories: 2000 }) })
+
+        // Mock 2 Tage mit Essen
+        const mockFoods = [
+            { date: '2023-01-01', calories: 2000 },
+            { date: '2023-01-02', calories: 1000 }
+        ]
+        // Summe = 3000, Tage = 2 -> Durchschnitt = 1500
+
+        fetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockFoods) })
+
+        const wrapper = mount(AnalyseView, {
+            global: { stubs: ['router-link', 'Chart', 'Doughnut'] }
+        })
+        await flushPromises()
+
+        expect(wrapper.vm.averageDailyCalories).toBe("1500")
+        expect(wrapper.vm.uniqueDaysCount).toBe(2)
+    })
+
 })
