@@ -10,19 +10,19 @@
         </div>
 
         <div class="flex flex-wrap gap-2">
-          <!-- Neuer Button: Rezept Speichern -->
+          <!-- Button: Rezept Speichern -->
           <button @click="openSaveRecipeModal"
                   class="bg-white text-slate-600 border border-slate-200 px-4 py-2.5 rounded-full text-sm font-bold hover:bg-slate-50 transition-all shadow-sm">
             <i class="fa-regular fa-bookmark mr-1"></i> Speichern
           </button>
 
-          <!-- Neuer Button: Rezepte Laden -->
+          <!-- Button: Rezepte Laden -->
           <button @click="fetchRecipes"
                   class="bg-white text-slate-600 border border-slate-200 px-4 py-2.5 rounded-full text-sm font-bold hover:bg-slate-50 transition-all shadow-sm">
             <i class="fa-solid fa-book-open mr-1"></i> Rezepte
           </button>
 
-          <!-- Button: Normaler Eintrag -->
+          <!-- Button: Neuer Eintrag -->
           <button @click="openAddModal"
                   class="bg-slate-900 text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-indigo-600 transition-all duration-300 shadow-sm active:scale-95">
             + <span class="hidden sm:inline ml-1">Eintrag</span>
@@ -81,29 +81,8 @@
     <!-- MAIN: Liste der Mahlzeiten -->
     <main class="max-w-5xl mx-auto px-6 pb-20">
 
-      <!-- FILTER TOGGLE BUTTONS (NEU) -->
-      <div class="flex justify-center mb-8 bg-white p-1.5 rounded-full shadow-sm border border-slate-100 w-fit mx-auto">
-        <button
-            @click="setFilter('today')"
-            :class="currentFilter === 'today' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'"
-            class="px-6 py-2 rounded-full text-sm font-bold transition-all duration-300"
-        >
-          Heute
-        </button>
-        <button
-            @click="setFilter('all')"
-            :class="currentFilter === 'all' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'"
-            class="px-6 py-2 rounded-full text-sm font-bold transition-all duration-300"
-        >
-          Gesamtverlauf
-        </button>
-      </div>
-
       <div class="flex items-center justify-between mb-8 border-b border-slate-200 pb-4">
-        <!-- Dynamische Überschrift je nach Filter -->
-        <h2 class="text-lg font-bold text-slate-800 tracking-tight">
-          {{ currentFilter === 'today' ? 'Heutige Mahlzeiten' : 'Alle Einträge' }}
-        </h2>
+        <h2 class="text-lg font-bold text-slate-800 tracking-tight">Heutige Mahlzeiten</h2>
         <div class="text-xs font-medium px-3 py-1 bg-slate-100 text-slate-500 rounded-full">
           {{ foodEntries.length }} Einträge
         </div>
@@ -111,14 +90,12 @@
 
       <div v-if="isLoading" class="flex flex-col items-center justify-center py-20 text-slate-400">
         <div class="w-10 h-10 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
-        <p class="text-sm font-medium">Daten werden synchronisiert...</p>
+        <p class="text-sm font-medium">Daten werden geladen...</p>
       </div>
 
       <div v-else-if="foodEntries.length === 0" class="bg-white border-2 border-dashed border-slate-200 rounded-[2rem] py-20 text-center">
         <i class="fa-solid fa-utensils text-slate-200 text-4xl mb-4"></i>
-        <p class="text-slate-400 font-medium">
-          {{ currentFilter === 'today' ? 'Noch keine Einträge für heute.' : 'Noch gar keine Einträge vorhanden.' }}
-        </p>
+        <p class="text-slate-400 font-medium">Noch keine Einträge für heute.</p>
         <button @click="openAddModal" class="mt-4 text-indigo-600 text-sm font-bold hover:underline">Jetzt erste Mahlzeit erfassen</button>
       </div>
 
@@ -192,7 +169,7 @@
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg relative z-10">
           <div class="p-8">
             <h3 class="text-2xl font-bold text-slate-900 mb-4">Rezept erstellen</h3>
-            <p class="text-sm text-slate-500 mb-6">Wähle die Zutaten aus deiner heutigen Liste, die zum Rezept gehören.</p>
+            <p class="text-sm text-slate-500 mb-6">Wähle die Zutaten aus deiner heutigen Liste.</p>
 
             <input type="text" v-model="newRecipeName" placeholder="Rezept Name (z.B. Mein Frühstück)"
                    class="w-full bg-slate-50 border-none rounded-xl p-4 mb-6 focus:ring-2 focus:ring-indigo-500/20">
@@ -257,7 +234,7 @@
 import FoodItem from '../components/FoodItem.vue';
 
 export default {
-  components: {FoodItem},
+  components: { FoodItem },
   data() {
     return {
       BASE_API_URL: 'https://webtechprojektbe-calorietrackz.onrender.com/api/foods',
@@ -274,9 +251,6 @@ export default {
       searchQuery: '',
       searchResults: [],
       isSearching: false,
-
-      // --- NEU: FILTER LOGIK ---
-      currentFilter: 'today', // Standardmäßig 'today'
 
       // --- Rezept Variablen ---
       recipes: [],
@@ -308,7 +282,7 @@ export default {
   },
   mounted() {
     this.currentDate = new Date().toLocaleDateString('de-DE', {weekday: 'long', day: 'numeric', month: 'long'});
-    this.fetchFoodEntries(); // Lädt jetzt standardmäßig 'today', weil currentFilter so gesetzt ist
+    this.fetchFoodEntries();
     this.fetchUserGoal();
   },
   methods: {
@@ -367,23 +341,12 @@ export default {
       this.searchQuery = '';
     },
 
-    // --- NEU: FILTER METHODE ---
-    setFilter(mode) {
-      this.currentFilter = mode;
-      this.fetchFoodEntries(); // Neu laden mit neuem Filter
-    },
-
-    // --- ANGEPASST: FETCH METHODE ---
+    // --- FETCH IMMER AUF HEUTE ---
     async fetchFoodEntries() {
       this.isLoading = true;
       try {
-        // Basis-URL
-        let url = this.BASE_API_URL;
-
-        // Falls wir nur HEUTE wollen, Parameter anhängen
-        if (this.currentFilter === 'today') {
-          url += '?mode=today';
-        }
+        // Wir hängen HARDCODED immer ?mode=today an
+        const url = `${this.BASE_API_URL}?mode=today`;
 
         const response = await fetch(url, {
           headers: this.getAuthHeaders()
