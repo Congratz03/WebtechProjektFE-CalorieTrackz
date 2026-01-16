@@ -150,11 +150,14 @@ import {
   Legend,
   BarElement,
   CategoryScale,
-  LinearScale
+  LinearScale,
+  PointElement, // <-- NEU: Für die Punkte der Linie
+  LineElement   // <-- NEU: Für die Linie selbst
 } from 'chart.js'
 import { Doughnut, Bar } from 'vue-chartjs'
 
-ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
+// Registrierung erweitert
+ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement)
 
 export default {
   components: { Doughnut, Bar },
@@ -248,7 +251,7 @@ export default {
           .slice(0, 3);
     },
 
-    // 7. Chart Data
+    // 7. Chart Data (MIT NEUER ZIELLINIE)
     doughnutChartData() {
       return {
         labels: ['Protein', 'Kohlenhydrate', 'Fett'],
@@ -262,6 +265,8 @@ export default {
     weeklyChartData() {
       const last7Days = [];
       const dataPoints = [];
+      const goalPoints = []; // 1. Array für die Ziellinie
+
       for (let i = 6; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
@@ -274,11 +279,37 @@ export default {
         const dailySum = this.foodEntries
             .filter(entry => entry.date === dateStr)
             .reduce((sum, e) => sum + (e.calories || 0), 0);
+
         dataPoints.push(dailySum);
+
+        // 2. Zielwert für jeden Tag hinzufügen
+        goalPoints.push(this.targetCalories);
       }
+
       return {
         labels: last7Days,
-        datasets: [{ label: 'Kalorien', backgroundColor: '#4f46e5', borderRadius: 6, data: dataPoints }]
+        datasets: [
+          // Datensatz 1: Deine Balken (wie vorher)
+          {
+            type: 'bar',
+            label: 'Kalorien',
+            backgroundColor: '#4f46e5',
+            borderRadius: 6,
+            data: dataPoints,
+            order: 2 // Liegt "hinter" der Linie
+          },
+          // Datensatz 2: Die ROTE LINIE (Neu)
+          {
+            type: 'line',
+            label: 'Ziel',
+            borderColor: '#ef4444', // Rot (Tailwind red-500)
+            borderWidth: 2,
+            borderDash: [5, 5], // Gestrichelt
+            pointRadius: 0, // Keine Punkte anzeigen, nur die Linie
+            data: goalPoints,
+            order: 1 // Liegt "vor" den Balken
+          }
+        ]
       }
     }
   },
